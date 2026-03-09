@@ -130,7 +130,7 @@ function AboutTab() {
             <p>
               {t('about.commit')}{' '}
               <a
-                href={`https://github.com/babarot/reader/commit/${commit}`}
+                href={`https://github.com/babarot/oksskolten/commit/${commit}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-accent hover:underline font-mono"
@@ -146,7 +146,7 @@ function AboutTab() {
 
       <div className="flex gap-4 mt-4">
         <a
-          href="https://github.com/babarot/reader"
+          href="https://github.com/babarot/oksskolten"
           target="_blank"
           rel="noopener noreferrer"
           className="text-accent hover:underline text-sm inline-flex items-center gap-1"
@@ -155,7 +155,7 @@ function AboutTab() {
           <ExternalLink size={12} />
         </a>
         <a
-          href="https://github.com/babarot/reader/issues"
+          href="https://github.com/babarot/oksskolten/issues"
           target="_blank"
           rel="noopener noreferrer"
           className="text-accent hover:underline text-sm inline-flex items-center gap-1"
