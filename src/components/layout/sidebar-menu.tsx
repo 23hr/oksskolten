@@ -113,7 +113,7 @@ export function SidebarMenu({ onClose }: SidebarMenuProps) {
 
           <DropdownMenuItem
             onSelect={async () => {
-              await fetch('/api/logout', { method: 'POST' }).catch(() => {})
+              await fetch('/api/logout', { method: 'POST', signal: AbortSignal.timeout(10_000) }).catch(() => {})
               logoutClient()
             }}
           >

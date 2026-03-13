@@ -50,6 +50,7 @@ export function HomePage() {
   // Stable greeting per mount (no re-roll on re-render)
   const greeting = useMemo(
     () => getGreeting(t, profile?.account_name ?? ''),
+    // Intentionally omit getGreeting — pure function, no stale closure risk
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [t, profile?.account_name],
   )

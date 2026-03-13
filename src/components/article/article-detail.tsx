@@ -64,13 +64,13 @@ export function ArticleDetail({ articleUrl }: ArticleDetailProps) {
     if (fullTextTranslated && article && article.full_text_translated !== fullTextTranslated) {
       void mutate({ ...article, full_text_translated: fullTextTranslated }, false)
     }
-  }, [fullTextTranslated]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [fullTextTranslated]) // eslint-disable-line react-hooks/exhaustive-deps -- only sync when translated text changes; article/mutate are refs to current data
 
   useEffect(() => {
     if (summary && article && article.summary !== summary) {
       void mutate({ ...article, summary }, false)
     }
-  }, [summary]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [summary]) // eslint-disable-line react-hooks/exhaustive-deps -- only sync when summary changes; article/mutate are refs to current data
 
   // Record article read on mount
   const viewedRef = useRef<number | null>(null)

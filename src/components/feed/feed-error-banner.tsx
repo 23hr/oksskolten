@@ -87,6 +87,7 @@ function reDetectSSE(
     fetch(`/api/feeds/${feedId}/re-detect`, {
       method: 'POST',
       headers: { ...headers },
+      signal: AbortSignal.timeout(60_000),
     })
       .then(async (res) => {
         if (!res.ok || !res.body) {
@@ -108,7 +109,7 @@ function reDetectSSE(
             try {
               const data = JSON.parse(line.slice(6))
               if (data.type === 'stage') onStage(data.stage)
-            } catch { /* ignore malformed */ }
+            } catch { /* skip malformed SSE JSON lines — non-critical progress updates */ }
           }
         }
         resolve()

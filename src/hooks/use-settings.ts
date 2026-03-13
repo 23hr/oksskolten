@@ -177,7 +177,7 @@ export function useSettings() {
         const parsed = JSON.parse(raw) as Theme[]
         setCustomThemesState(parsed)
         localStorage.setItem('custom-themes', raw)
-      } catch { /* ignore malformed */ }
+      } catch { /* ignore malformed JSON from DB — keep existing localStorage themes */ }
     }
   }, [prefs])
 
@@ -272,7 +272,7 @@ export function useSettings() {
       syncedSetTranslateProvider: make<string>('translate.provider', setTranslateProviderState),
       syncedSetTranslateModel: make<string>('translate.model', setTranslateModelState),
     }
-    // All setters are from useState (stable) or custom hooks with useCallback (stable)
+    // scheduleSave and dirtyKeysRef are stable refs; remaining setters are useState/useCallback-stable
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setDateMode, setAutoMarkRead, setShowUnreadIndicator, setInternalLinks, setShowThumbnails, setShowFeedActivity, setChatPosition, setArticleOpenMode, setLayout, setArticleFont, setMascot])
 

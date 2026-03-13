@@ -430,13 +430,6 @@ export function ImageStorageSettings() {
         {/* Messages */}
         {error && <p className="text-sm text-error">{error}</p>}
         {success && <p className="text-sm text-accent">{success}</p>}
-
-        {/* TODO: Future features for this section:
-         *  - Purge orphaned images: detect and delete stored images whose URLs are
-         *    no longer referenced by any article in the database.
-         *  - Storage usage dashboard: show total size, image count, and per-feed
-         *    breakdown of cached images so the user can monitor disk consumption.
-         */}
       </div>
     </section>
   )
