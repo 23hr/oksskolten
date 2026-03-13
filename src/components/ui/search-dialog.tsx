@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import useSWR from 'swr'
 import { X, Bookmark, ThumbsUp, Circle, CalendarDays, CalendarRange, CalendarFold } from 'lucide-react'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
+import { Dialog, DialogPortal, DialogOverlay, DialogTitle } from './dialog'
 import { fetcher } from '../../lib/fetcher'
 import { searchArticles } from '../../lib/search'
 
@@ -110,15 +111,15 @@ export function SearchDialog({ onClose }: SearchDialogProps) {
   const displayItems = query.trim() ? results : recentArticles
 
   return (
-    <DialogPrimitive.Root open onOpenChange={(open) => { if (!open) onClose() }}>
-      <DialogPrimitive.Portal>
-        <DialogPrimitive.Overlay className="fixed inset-0 bg-bg-card md:bg-overlay z-[70]" />
+    <Dialog open onOpenChange={(open) => { if (!open) onClose() }}>
+      <DialogPortal>
+        <DialogOverlay className="bg-bg-card md:bg-overlay" />
         <DialogPrimitive.Content
           className="fixed inset-0 md:inset-auto md:top-[15vh] md:left-1/2 md:-translate-x-1/2 z-[70] w-full md:max-w-lg md:rounded-xl md:border border-border md:shadow-xl overflow-hidden select-none bg-bg-card flex flex-col"
           style={{ paddingTop: 'env(safe-area-inset-top)' }}
           aria-describedby={undefined}
         >
-          <DialogPrimitive.Title className="sr-only">Search</DialogPrimitive.Title>
+          <DialogTitle className="sr-only">Search</DialogTitle>
         <Command
           shouldFilter={false}
           className={[
@@ -246,7 +247,7 @@ export function SearchDialog({ onClose }: SearchDialogProps) {
           </div>
         </Command>
         </DialogPrimitive.Content>
-      </DialogPrimitive.Portal>
-    </DialogPrimitive.Root>
+      </DialogPortal>
+    </Dialog>
   )
 }
