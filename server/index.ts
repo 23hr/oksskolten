@@ -41,8 +41,8 @@ if (process.env.NODE_ENV === 'development') {
   seedDevData()
 }
 
-// env var → DBへの移行: env varがあってDBに未保存なら永続化する
-// これにより .env から JWT_SECRET を削除しても既存トークンが無効にならない
+// Migrate JWT_SECRET from env var to DB so existing tokens remain valid
+// even after removing the env var
 const envSecret = process.env.JWT_SECRET
 if (envSecret) {
   const dbSecret = getSetting('system.jwt_secret')
@@ -52,7 +52,7 @@ if (envSecret) {
   }
 }
 
-// env var は常に最優先（明示指定 > DB保存値 > 新規生成）
+// Precedence: env var > DB value > auto-generated
 const jwtSecret = process.env.JWT_SECRET || getOrCreateJwtSecret()
 
 // --- Fastify ---
