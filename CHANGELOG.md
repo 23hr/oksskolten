@@ -1,5 +1,7 @@
 # Changelog
 
+## [v0.1.1](https://github.com/23hr/oksskolten/commits/v0.1.1) - 2026-03-18
+
 ## [v0.1.1](https://github.com/babarot/oksskolten/compare/v0.1.0...v0.1.1) - 2026-03-17
 - Fix category select dropdown not appearing above modal overlay by @gymynnym in https://github.com/babarot/oksskolten/pull/7
 
