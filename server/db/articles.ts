@@ -399,6 +399,10 @@ export function getExistingArticleUrls(urls: string[]): Set<string> {
   return new Set(rows.map(r => r.url))
 }
 
+// Backoff deadline: datetime when the article becomes eligible for retry again.
+// 30 * 2^retry_count minutes, clamped to 32 hours via MIN(retry_count, 6).
+const BACKOFF_DEADLINE = `datetime(last_retry_at, '+' || (30 * (1 << MIN(retry_count, 6))) || ' minutes')`
+
 export function getRetryArticles(
   maxAttempts = RETRY_MAX_ATTEMPTS,
   batchLimit = RETRY_BATCH_LIMIT,
@@ -410,7 +414,7 @@ export function getRetryArticles(
       AND retry_count < :max_attempts
       AND (
         last_retry_at IS NULL
-        OR datetime(last_retry_at, '+' || (30 * (1 << MIN(retry_count, 6))) || ' minutes') <= datetime('now')
+        OR ${BACKOFF_DEADLINE} <= datetime('now')
       )
     ORDER BY retry_count ASC, last_retry_at ASC
     LIMIT :batch_limit
@@ -428,11 +432,11 @@ export function getRetryStats(maxAttempts = RETRY_MAX_ATTEMPTS): RetryStats {
     SELECT
       SUM(CASE WHEN retry_count < :max_attempts AND (
         last_retry_at IS NULL
-        OR datetime(last_retry_at, '+' || (30 * (1 << MIN(retry_count, 6))) || ' minutes') <= datetime('now')
+        OR ${BACKOFF_DEADLINE} <= datetime('now')
       ) THEN 1 ELSE 0 END) AS eligible,
       SUM(CASE WHEN retry_count < :max_attempts AND
         last_retry_at IS NOT NULL AND
-        datetime(last_retry_at, '+' || (30 * (1 << MIN(retry_count, 6))) || ' minutes') > datetime('now')
+        ${BACKOFF_DEADLINE} > datetime('now')
       THEN 1 ELSE 0 END) AS backoff_waiting,
       SUM(CASE WHEN retry_count >= :max_attempts THEN 1 ELSE 0 END) AS exceeded
     FROM articles

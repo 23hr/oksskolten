@@ -126,7 +126,8 @@ interface RetryArticle {
 
 type ArticleTask = NewArticle | RetryArticle
 
-async function processArticle(task: ArticleTask): Promise<void> {
+/** Returns true if the retry article still has an error after processing. */
+async function processArticle(task: ArticleTask): Promise<boolean> {
   const articleUrl = task.kind === 'new' ? task.url : task.article.url
 
   const content = await fetchArticleContent(articleUrl, {
@@ -168,9 +169,9 @@ async function processArticle(task: ArticleTask): Promise<void> {
       excerpt: content.excerpt,
       og_image: content.ogImage,
       last_error: content.lastError,
-      ...(content.lastError ? { retry_count: (task.article.retry_count ?? 0) + 1 } : {}),
     })
   }
+  return !!content.lastError
 }
 
 // --- Single feed fetch ---
@@ -378,17 +379,25 @@ export async function fetchAllFeeds(
   await Promise.all(
     allTasks.map(task =>
       processingSemaphore.run(async () => {
+        let retryFailed = false
         try {
-          await processArticle(task)
+          retryFailed = await processArticle(task)
         } catch (err) {
           log.error('Article error:', err)
+          retryFailed = true
           if (task.kind === 'retry') {
             const msg = err instanceof Error ? err.message : String(err)
             updateArticleContent(task.article.id, {
               last_error: msg,
-              retry_count: (task.article.retry_count ?? 0) + 1,
             })
           }
+        }
+        // Single place where retry_count is incremented — covers both
+        // the returned-error path and the thrown-exception path.
+        if (task.kind === 'retry' && retryFailed) {
+          updateArticleContent(task.article.id, {
+            retry_count: (task.article.retry_count ?? 0) + 1,
+          })
         }
         if (task.kind === 'new') {
           const feedId = task.feed_id
