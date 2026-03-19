@@ -18,6 +18,7 @@ jobs:
     outputs:
       server: ${{ steps.filter.outputs.server }}
       client: ${{ steps.filter.outputs.client }}
+      spec: ${{ steps.filter.outputs.spec }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -33,6 +34,10 @@ jobs:
               - 'tsconfig.json'
               - 'vitest.config.ts'
               - 'eslint.config.js'
+            spec:
+              - 'docs/spec/**'
+              - 'policy/spec/**'
+              - 'scripts/test-spec-policy.sh'
             client:
               - 'src/**'
               - 'shared/**'
@@ -180,15 +185,42 @@ jobs:
           json-summary-path: coverage/client/coverage-summary.json
           json-summary-compare-path: ${{ steps.check-base.outputs.exists == 'true' && 'coverage/client-base/coverage-summary.json' || '' }}
 
+  lint-spec:
+    name: Spec Lint
+    needs: detect-changes
+    if: needs.detect-changes.outputs.spec == 'true'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install conftest
+        run: |
+          curl -fsSL https://github.com/open-policy-agent/conftest/releases/download/v0.65.0/conftest_0.65.0_Linux_x86_64.tar.gz \
+            | tar xz -C /usr/local/bin conftest
+
+      - run: npm ci
+
+      - name: Verify Rego tests
+        run: conftest verify --policy policy/spec
+
+      - name: Lint spec documents
+        run: bash scripts/test-spec-policy.sh
+
   ci-gate:
     name: CI Gate
     if: always()
-    needs: [check, server-test, client-test]
+    needs: [check, server-test, client-test, lint-spec]
     runs-on: ubuntu-latest
     steps:
       - name: Check results
         run: |
-          results=("${{ needs.check.result }}" "${{ needs.server-test.result }}" "${{ needs.client-test.result }}")
+          results=("${{ needs.check.result }}" "${{ needs.server-test.result }}" "${{ needs.client-test.result }}" "${{ needs.lint-spec.result }}")
           for r in "${results[@]}"; do
             if [[ "$r" != "success" && "$r" != "skipped" ]]; then
               echo "Job failed with result: $r"

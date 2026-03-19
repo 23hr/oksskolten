@@ -1,4 +1,4 @@
-# Oksskolten Implementation Spec — Keyboard Navigation
+# Oksskolten Spec — Keyboard Navigation
 
 > [Back to overview](./01_overview.md)
 
@@ -139,73 +139,12 @@ Focus state is not automatically reset on page navigation. After pressing Escape
 
 When the article list is empty (no articles), pressing j/k does nothing.
 
----
+### Key Files
 
-### Reference: Keyboard Shortcuts in Other RSS Readers
-
-| App | Next/Prev | Open | Bookmark | Open in Browser |
-|---|---|---|---|---|
-| Miniflux | `j` / `k` | `o` | `d` | `v` |
-| Feedly | `j` / `k` | `Enter` | `s` | `v` |
-| Inoreader | `j` / `k` | `o` | `s` | `v` |
-
-### Implementation
-
-#### File Structure
-
-| File | Type | Description |
-|---|---|---|
-| `src/contexts/keyboard-navigation-context.tsx` | New | KeyboardNavigationContext and Provider |
-| `src/hooks/use-keyboard-navigation.ts` | New | Key event handling and focus movement logic |
-| `src/hooks/use-keyboard-navigation.test.ts` | New | Hook unit tests |
-| `src/components/layout/page-layout.tsx` | Modified | Provider placement |
-| `src/components/article/article-list.tsx` | Modified | Article list keyboard nav integration, visual feedback, overlay coordination |
-| `src/components/article/article-overlay.tsx` | Modified | Added `data-keyboard-nav-passthrough` attribute |
-
-#### Test Plan
-
-Unit tests for the `use-keyboard-navigation` hook verify:
-
-- j/k focus movement (normal cases)
-- Boundary behavior at list start/end (stops)
-- Empty list (no-op)
-- Initial focus (null to first item)
-- Stale focusedItemId (resets to first item)
-- Input field conflict avoidance (isInput check)
-- Dialog detection (blocks keys when non-passthrough dialog is open)
-- Passthrough dialog exception (allows keys)
-- Enter/Escape callbacks
-- l/; action callbacks
-- enabled flag disabling
-- Listener cleanup on unmount
-
-## Current Status
-
-Validation complete.
-
-### Implementation Checklist
-
-- [x] `src/contexts/keyboard-navigation-context.tsx` — KeyboardNavigationContext and Provider
-- [x] `src/hooks/use-keyboard-navigation.ts` — Key event handling and focus movement logic
-- [x] `src/hooks/use-keyboard-navigation.test.ts` — Hook unit tests (22 tests)
-- [x] `src/components/layout/page-layout.tsx` — Provider placement
-- [x] `src/components/article/article-list.tsx` — Article list keyboard nav integration, visual feedback, articleOpenMode support
-- [x] `src/components/article/article-overlay.tsx` — Added `data-keyboard-nav-passthrough` attribute
-
-### Discrepancies
-
-- **Feed list nav removed** — Spec originally described feed list support; implementation targets article list only. Resolution: spec updated
-- **focusContext state removed** — Spec originally managed `focusContext`; implementation uses only `focusedItemId`. Resolution: spec updated
-- **Enter/j/k behavior depends on articleOpenMode** — Spec originally had Enter always route-navigate; implementation varies by mode. Resolution: spec updated
-- **Phase 2 inline preview → ArticleOverlay** — Spec originally described 3-column inline preview; implementation uses existing ArticleOverlay. Resolution: spec updated
-- **Auto-reset on navigation removed** — Spec originally reset on location change; implementation uses explicit Escape only (reset on feed/category change retained). Resolution: spec updated
-
-### Updates
-
-- 2026-03-18: Spec interview completed. All design decisions finalized.
-- 2026-03-18: Phase 1 implementation complete (Context, Hook, 19 tests, PageLayout Provider, article-list integration).
-- 2026-03-18: Scope change — removed feed list keyboard nav per user request. j/k only operates on article list.
-- 2026-03-18: Phase 2 changed from inline preview pane to ArticleOverlay-based navigation. j/k opens articles in overlay mode, Enter navigates in page mode.
-- 2026-03-18: Added overlay focus persistence — Escape closes overlay but keeps focus, allowing j/k to resume from the same article.
-- 2026-03-18: Validation complete. 5 discrepancies found, all resolved by updating spec to match implementation.
-- 2026-03-18: Code review fixes — ref pattern for stable event listener, `data-state="open"` in dialog detection, stale focusedItemId test, dialog detection tests, Fragment cleanup, feed/category change focus reset.
+| File | Description |
+|---|---|
+| `src/contexts/keyboard-navigation-context.tsx` | KeyboardNavigationContext and Provider |
+| `src/hooks/use-keyboard-navigation.ts` | Key event handling and focus movement logic |
+| `src/components/layout/page-layout.tsx` | Provider placement |
+| `src/components/article/article-list.tsx` | Article list keyboard nav integration, visual feedback, overlay coordination |
+| `src/components/article/article-overlay.tsx` | `data-keyboard-nav-passthrough` attribute for j/k passthrough |
