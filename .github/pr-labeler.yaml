@@ -6,3 +6,5 @@ changelog/skip:
         - '!src/**'
         - '!shared/**'
         - '!migrations/**'
+        - '!CHANGELOG.md'
+        - '!package.json'
