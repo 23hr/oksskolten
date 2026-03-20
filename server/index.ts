@@ -7,7 +7,7 @@ import jwt from '@fastify/jwt'
 import rateLimit from '@fastify/rate-limit'
 import multipart from '@fastify/multipart'
 import cron, { type ScheduledTask } from 'node-cron'
-import { runMigrations, getSetting, upsertSetting, getOrCreateJwtSecret, ensureClipFeed, recalculateScores, purgeExpiredArticles, RETENTION_READ_DEFAULT, RETENTION_UNREAD_DEFAULT } from './db.js'
+import { runMigrations, getSetting, upsertSetting, getOrCreateJwtSecret, ensureClipFeed, recalculateScores, purgeExpiredArticles } from './db.js'
 import { logger } from './logger.js'
 
 const log = logger
@@ -224,8 +224,9 @@ cronTasks.push(cron.schedule(RETENTION_SCHEDULE, () => {
   const enabled = getSetting('retention.enabled')
   if (enabled !== 'on') return
 
-  const readDays = Number(getSetting('retention.read_days')) || RETENTION_READ_DEFAULT
-  const unreadDays = Number(getSetting('retention.unread_days')) || RETENTION_UNREAD_DEFAULT
+  const readDays = Number(getSetting('retention.read_days'))
+  const unreadDays = Number(getSetting('retention.unread_days'))
+  if (!readDays || !unreadDays) return
 
   try {
     const { purged } = purgeExpiredArticles(readDays, unreadDays)

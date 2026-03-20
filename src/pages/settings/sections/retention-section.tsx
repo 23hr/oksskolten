@@ -54,8 +54,17 @@ export function RetentionSection() {
   }, [mutatePrefs, mutateStats])
 
   const handleToggle = useCallback((value: 'on' | 'off') => {
-    void savePref({ 'retention.enabled': value })
-  }, [savePref])
+    if (value === 'on') {
+      // Save default day values together so the server never sees enabled=on without days configured
+      void savePref({
+        'retention.enabled': value,
+        ...(!prefs?.['retention.read_days'] ? { 'retention.read_days': String(DEFAULT_READ_DAYS) } : {}),
+        ...(!prefs?.['retention.unread_days'] ? { 'retention.unread_days': String(DEFAULT_UNREAD_DAYS) } : {}),
+      })
+    } else {
+      void savePref({ 'retention.enabled': value })
+    }
+  }, [savePref, prefs])
 
   const commitReadDays = useCallback(() => {
     const num = Number(localReadDays)

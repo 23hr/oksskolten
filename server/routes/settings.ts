@@ -7,8 +7,6 @@ import {
   getRetentionStats,
   purgeExpiredArticles,
   getDb,
-  RETENTION_READ_DEFAULT,
-  RETENTION_UNREAD_DEFAULT,
 } from '../db.js'
 import { requireJson, getAuthUser } from '../auth.js'
 import { getAllModelValues, getModelValues } from '../../shared/models.js'
@@ -466,21 +464,30 @@ export async function settingsRoutes(api: FastifyInstance): Promise<void> {
 
   // --- Retention policy ---
 
-  function getRetentionDays(): { readDays: number; unreadDays: number } {
-    const readDays = Number(getSetting('retention.read_days')) || RETENTION_READ_DEFAULT
-    const unreadDays = Number(getSetting('retention.unread_days')) || RETENTION_UNREAD_DEFAULT
+  function getRetentionDays(): { readDays: number; unreadDays: number } | null {
+    const readDays = Number(getSetting('retention.read_days'))
+    const unreadDays = Number(getSetting('retention.unread_days'))
+    if (!readDays || !unreadDays) return null
     return { readDays, unreadDays }
   }
 
   api.get('/api/settings/retention/stats', async (_request, reply) => {
-    const { readDays, unreadDays } = getRetentionDays()
-    const stats = getRetentionStats(readDays, unreadDays)
-    reply.send({ readDays, unreadDays, ...stats })
+    const days = getRetentionDays()
+    if (!days) {
+      reply.send({ readDays: 0, unreadDays: 0, readEligible: 0, unreadEligible: 0 })
+      return
+    }
+    const stats = getRetentionStats(days.readDays, days.unreadDays)
+    reply.send({ readDays: days.readDays, unreadDays: days.unreadDays, ...stats })
   })
 
   api.post('/api/settings/retention/purge', async (_request, reply) => {
-    const { readDays, unreadDays } = getRetentionDays()
-    const result = purgeExpiredArticles(readDays, unreadDays)
+    const days = getRetentionDays()
+    if (!days) {
+      reply.send({ purged: 0 })
+      return
+    }
+    const result = purgeExpiredArticles(days.readDays, days.unreadDays)
 
     // Checkpoint WAL after purge
     try {
