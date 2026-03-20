@@ -1,7 +1,7 @@
 import { getDb, runNamed } from './connection.js'
 import type { Feed, FeedWithCounts } from './types.js'
 import type { MeiliArticleDoc } from '../search/client.js'
-import { deleteArticlesByFeedFromSearch, syncArticlesByFeedToSearch } from '../search/sync.js'
+import { deleteArticlesFromSearch, syncArticlesByFeedToSearch } from '../search/sync.js'
 
 export function getFeeds(): FeedWithCounts[] {
   return getDb().prepare(`
@@ -190,7 +190,7 @@ export function deleteFeed(id: number): boolean {
     return { articleIds: ids, deleted: result.changes > 0 }
   })()
   if (deleted && articleIds.length > 0) {
-    deleteArticlesByFeedFromSearch(articleIds)
+    deleteArticlesFromSearch(articleIds)
   }
   return deleted
 }

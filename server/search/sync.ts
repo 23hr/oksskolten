@@ -194,7 +194,7 @@ export function syncArticleFiltersToSearch(updates: { id: number; is_unread?: bo
   }
 }
 
-export function deleteArticlesByFeedFromSearch(articleIds: number[]): void {
+export function deleteArticlesFromSearch(articleIds: number[]): void {
   if (articleIds.length === 0) return
   try {
     const client = getSearchClient()

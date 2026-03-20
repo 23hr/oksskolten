@@ -1,7 +1,7 @@
 import { getDb, runNamed, getNamed, allNamed } from './connection.js'
 import type { Article, ArticleListItem, ArticleDetail } from './types.js'
 import type { MeiliArticleDoc } from '../search/client.js'
-import { syncArticleToSearch, deleteArticleFromSearch, syncArticleScoreToSearch, syncArticleFiltersToSearch } from '../search/sync.js'
+import { syncArticleToSearch, deleteArticleFromSearch, deleteArticlesFromSearch, syncArticleScoreToSearch, syncArticleFiltersToSearch } from '../search/sync.js'
 import { RETRY_MAX_ATTEMPTS, RETRY_BATCH_LIMIT } from '../fetcher/util.js'
 import { deleteArticleImages } from '../fetcher/article-images.js'
 import { logger } from '../logger.js'
@@ -714,9 +714,7 @@ export function purgeExpiredArticles(readDays: number, unreadDays: number): { pu
         WHERE id IN (${placeholders})
       `).run(...batch)
 
-      for (const id of batch) {
-        deleteArticleFromSearch(id)
-      }
+      deleteArticlesFromSearch(batch)
 
       return res
     })()
