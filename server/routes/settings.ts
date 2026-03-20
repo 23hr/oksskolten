@@ -482,6 +482,10 @@ export async function settingsRoutes(api: FastifyInstance): Promise<void> {
   })
 
   api.post('/api/settings/retention/purge', async (_request, reply) => {
+    if (getSetting('retention.enabled') !== 'on') {
+      reply.status(400).send({ error: 'Retention policy is not enabled' })
+      return
+    }
     const days = getRetentionDays()
     if (!days) {
       reply.send({ purged: 0 })
